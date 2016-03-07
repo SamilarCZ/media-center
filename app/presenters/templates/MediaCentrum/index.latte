@@ -1,0 +1,232 @@
+{block content}
+    {snippet}
+    <div id="main">
+        <div id="banner">
+            <h1 n:block=title>Filmotéka</h1>
+            <a n:href="scanDirectories!" class="ajax" title="Proskenuje všechny filmové adresáře a aplikuje je v seznamu filmů">Scanovat adresáře</a>
+            <a n:href="clearCache!" class="ajax" title="Vymaže CACHE na serveru(OPATRNĚ!)">Vyčistit CACHE</a>
+            <br />
+            <a href="#" class="togglePlayer" title="Zobrazí / Skryje přehrávač">Zobrazení/Skrytí přehrávače</a>
+        </div>
+        {snippet vlcPlayer}
+            <div id="player" class="hidePlayer">
+                <div id="vlc">
+                    <div id="display">
+                        {snippet vlcDisplay}
+                            Právě se přehrává : <br />
+                            {if isset($vlcStatus['playing']['title']) && !empty($vlcStatus['playing']['title'])}
+                                {if isset($vlcStatus['playing']['filename']) && !empty($vlcStatus['playing']['filename'])}
+                                    <strong title="{$vlcStatus['playing']['title']}">{$vlcStatus['playing']['filename']|truncate:45}</strong>
+                                {else}
+                                    <strong title="{$vlcStatus['playing']['title']}">{$vlcStatus['playing']['title']|truncate:45}</strong>
+                                {/if}
+                            {elseif isset($vlcStatus['playing']['filename']) && !empty($vlcStatus['playing']['filename'])}
+                                <strong title="{$vlcStatus['playing']['filename']}">{$vlcStatus['playing']['filename']|truncate:45}</strong>
+                            {else}
+                                -----
+                            {/if}
+
+                        {/snippet}
+                    </div>
+                    <a n:href="vlcPrev!" class="ajax" title="Předchozí"><i class="fa fa-fast-backward"></i></a>
+                    <a n:href="vlcPlayPause!" class="ajax" title="Play / Pause"><i class="fa fa-play nopadding-right"></i><i class="fa fa-pause nopadding-left"></i></a>
+                    <a n:href="vlcStop!" class="ajax" title="Stop"><i class="fa fa-stop"></i></a>
+                    <a n:href="vlcNext!" class="ajax" title="Následující"><i class="fa fa-fast-forward"></i></a>
+                    <a n:href="vlcFullscreen!" class="ajax" title="Celá obrazovka"><i class="fa fa-arrows-alt"></i></a>
+                    <br />
+                    <a n:href="vlcMute!" class="ajax" title="Vypnout zvuk"><i class="fa fa-volume-off"></i></a>
+                    <a n:href="vlcVolumeDown!" class="ajax" title="Ubrat hlasitost o 5%"><i class="fa fa-minus"></i></a>
+                    <a n:href="vlcVolumeUp!" class="ajax" title="Přidat hlasitost o 5%"><i class="fa fa-plus"></i></a>
+                    <a n:href="vlcUnmute!" class="ajax" title="Zapnout zvuk"><i class="fa fa-volume-up"></i></a>
+
+                    <a n:href="vlcErasePlaylist!" class="ajax" title="Vymazat celý playlist"><i class="fa fa-trash"></i></a>
+                    <a n:href="syncPlaylist!" class="ajax" title="Synchronizovat seznam"><i class="fa fa-refresh"></i></a>
+                </div>
+                <div id="playlist">
+                    {snippet vlcPlaylist}
+                        {foreach $playlist as $key => $item}
+                            {var $title = trim($vlcStatus['playing']['title'])}
+                            {var $filename = trim($vlcStatus['playing']['filename'])}
+                            {if isset($title)}
+                                {if isset($filename)}
+                                    <a n:href="vlcPlayItem!, $key" {if $item == $vlcStatus['playing']['filename']}id="playing"{/if} class="ajax{if $item == $vlcStatus['playing']['filename']} playing{/if}" title="{$item}">{$item|truncate:30:""}</a> <a n:href="vlcDeleteItem!, $key" class="ajax red">X</a><br />
+                                {else}
+                                    <a n:href="vlcPlayItem!, $key" {if $item == $vlcStatus['playing']['title']}id="playing"{/if} class="ajax{if $item == $vlcStatus['playing']['title']} playing{/if}" title="{$item}">{$item|truncate:30:""}</a> <a n:href="vlcDeleteItem!, $key" class="ajax red">X</a><br />
+                                {/if}
+                            {/if}
+                        {/foreach}
+                        <script>
+                            if ($("#playing").length > 0) {
+                                var playing = $("#playing").position().top;
+                                $("#playlist").animate({ scrollTop: playing-180 });
+                            }
+                        </script>
+                    {/snippet}
+                </div>
+            </div>
+        {/snippet}
+        <div id="content">
+            <div>
+                {snippet movies}
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-hover" id="movieTable" cellspacing="0">
+                                        <thead>
+                                        <tr>
+                                            <th>Film / Seriál</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {foreach $movies as $movie}
+                                            <tr>
+                                                <td class="tdPoster">
+                                                    {if isset($showRename[$movie->id])}
+                                                        {form renameForm, class => "ajax"}
+                                                        <div>
+                                                            {label custom_name}
+                                                            {input custom_name, value => $movie->custom_name}
+                                                            {/label}
+                                                        </div>
+                                                        <div>
+                                                            {input movieId value => $movie->id}
+                                                            {input submit}
+                                                        </div>
+                                                        {/form}
+                                                    {else}
+                                                        <a n:href="renameMovie!, $movie->id" class="ajax" title="Název(slouží pro vyhledávání na ČSFD.cz - kliknutím možno upravovat !)">{$movie->custom_name} <i class="fa fa-pencil"></i></a>
+                                                    {/if}
+                                                    <table>
+                                                        <tr>
+                                                            <td class="tdRanking
+                                                            {if $movie->ranking >= 0 && $movie->ranking <= 10}rank rank0-10
+                                                            {elseif $movie->ranking >= 11 && $movie->ranking <= 20}rank rank11-20
+                                                            {elseif $movie->ranking >= 21 && $movie->ranking <= 30}rank rank21-30
+                                                            {elseif $movie->ranking >= 31 && $movie->ranking <= 40}rank rank31-40
+                                                            {elseif $movie->ranking >= 41 && $movie->ranking <= 50}rank rank41-50
+                                                            {elseif $movie->ranking >= 51 && $movie->ranking <= 60}rank rank51-60
+                                                            {elseif $movie->ranking >= 61 && $movie->ranking <= 70}rank rank61-70
+                                                            {elseif $movie->ranking >= 71 && $movie->ranking <= 80}rank rank71-80
+                                                            {elseif $movie->ranking >= 81 && $movie->ranking <= 90}rank rank81-90
+                                                            {elseif $movie->ranking >= 91 && $movie->ranking <= 100}rank rank91-100
+                                                            {/if}
+                                                            ">
+                                                                {if isset($showRating[$movie->id])}
+                                                                    {form rankingForm, class => "ajax"}
+                                                                    <div>
+                                                                        {label ranking}
+                                                                        {input ranking}
+                                                                        {/label}
+                                                                    </div>
+                                                                    <div>
+                                                                        {input movieId value => $movie->id}
+                                                                        {input submit}
+                                                                    </div>
+                                                                    {/form}
+                                                                {else}
+                                                                    <a n:href="addRanking!, $movie->id" class="ajax" title="Hodnocení(kliknutím je možno zadat hodnocení)">{$movie->ranking}</a>
+                                                                {/if}
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                    <br />
+                                                    <a n:href="addToVlcPlaylistAndPlay!, $movie->id" class="ajax" title="Přidat do playlistu a přehrát hned"><i class="fa fa-play"></i></a>
+                                                    <a n:href="addToVlcPlaylist!, $movie->id" class="ajax" title="Přidat položku do playlistu"><i class="fa fa-plus"></i></a>
+                                                    <a n:href="checkCSFD!, $movie->id" class="ajax" title="Načíst informace z ČSFD.cz"><i class="fa fa-refresh"></i></a>
+                                                    {if $movie->csfd_link}
+                                                        <a href="{$movie->csfd_link}" target="_blank" title="Odkaz na ČSFD.cz"><i class="fa fa-link"></i></a>
+                                                    {/if}
+                                                    {if $movie->csfd_poster}
+                                                        <a href="#" class="posterLink" data-id="poster{$movie->id}" title="Ukázat poster"><i class="fa fa-picture-o"></i></a>
+                                                        <div class="poster" id="poster{$movie->id}">
+                                                            <table class="notable">
+                                                                <tr>
+                                                                    <td>
+                                                                        <a href="#" class="close" data-id="poster{$movie->id}" title="Zavřit poster">zavřít</a>
+                                                                    </td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>
+                                                                        <img src="images/posters/{$movie->csfd_poster}" alt="{$movie->csfd_title}" title="{$movie->csfd_title}" />
+                                                                    </td>
+                                                                </tr>
+                                                            </table>
+                                                        </div>
+                                                    {/if}
+                                                    <a href="#" class="detail" data-id="{$movie->id}" title="Zobrazit detail filmu/seriálu"><i class="fa fa-info"></i></a>
+                                                </td>
+                                            </tr>
+                                            <tr class="hideDetail" id="detail{$movie->id}">
+                                                <td>
+                                                    <div class="container">
+                                                        <div class="row">
+                                                            <div class="col-xs-12">
+                                                                <div class="table-responsive">
+                                                                    <table class="table table-bordered table-hover">
+                                                                        <thead>
+                                                                            <tr>
+                                                                                <td colspan="6" align="center">
+                                                                                    <a href="#" class="closeDetail" data-id="{$movie->id}" title="Zavřít detail filmu/seriálu">
+                                                                                        <i class="fa fa-times"></i>
+                                                                                    </a>
+                                                                                </td>
+                                                                            </tr>
+                                                                            <tr>
+                                                                                <th>ČSFD Poster</th>
+                                                                                <th>ČSFD Titul</th>
+                                                                                <th>ČSFD ID</th>
+                                                                                <th>Rok vydání</th>
+                                                                                <th>Cesta k adresáři</th>
+                                                                                <th>Cesta LAN</th>
+                                                                            </tr>
+                                                                        </thead>
+                                                                        <tbody>
+                                                                            <tr>
+                                                                                <td>
+                                                                                {if $movie->csfd_poster}
+                                                                                    <img src="images/posters/{$movie->csfd_poster}" alt="{$movie->csfd_title}" title="{$movie->csfd_title}" />
+                                                                                {/if}
+                                                                                </td>
+                                                                                <td>{$movie->csfd_title}</td>
+                                                                                <td>{$movie->csfd_id}</td>
+                                                                                <td>{$movie->csfd_year}</td>
+                                                                                <td>{$movie->name}</td>
+                                                                                <td>{$movie->lan_path}</td>
+                                                                            </tr>
+                                                                            <tr>
+                                                                                <td colspan="6">
+                                                                                    Obsah adresáře: <br />
+                                                                                    <ul>
+                                                                                    {if isset($movie->dir_content)}
+                                                                                        {foreach unserialize($movie->dir_content) as $item}
+                                                                                            <li>{$item}</li>
+                                                                                        {/foreach}
+                                                                                    {/if}
+                                                                                    </ul>
+                                                                                </td>
+                                                                            </tr>
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        {/foreach}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {/snippet}
+            </div>
+        </div>
+    </div>
+    {/snippet}
+    {snippet scripts}
+        <script src="{$basePath}/js/main.js"></script>
+    {/snippet}
+{/block}

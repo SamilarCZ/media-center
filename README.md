@@ -1,1 +1,1 @@
-# media-center
+Media center by Filip Lansky just for home use made with fun :))
