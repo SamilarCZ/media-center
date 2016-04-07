@@ -49,9 +49,9 @@
                             {var $filename = trim($vlcStatus['playing']['filename'])}
                             {if isset($title)}
                                 {if isset($filename)}
-                                    <a n:href="vlcPlayItem!, $key" {if $item == $vlcStatus['playing']['filename']}id="playing"{/if} class="ajax{if $item == $vlcStatus['playing']['filename']} playing{/if}" title="{$item}">{$item|truncate:30:""}</a> <a n:href="vlcDeleteItem!, $key" class="ajax red">X</a><br />
+                                    <a n:href="vlcPlayItem!, $key" {if $key == $vlcStatus['playing']['id']}id="playing"{/if} class="ajax{if $item == $vlcStatus['playing']['filename']} playing{/if}" title="{$item}">{$item|truncate:30:""}</a> <a n:href="vlcDeleteItem!, $key" class="ajax red">X</a><br />
                                 {else}
-                                    <a n:href="vlcPlayItem!, $key" {if $item == $vlcStatus['playing']['title']}id="playing"{/if} class="ajax{if $item == $vlcStatus['playing']['title']} playing{/if}" title="{$item}">{$item|truncate:30:""}</a> <a n:href="vlcDeleteItem!, $key" class="ajax red">X</a><br />
+                                    <a n:href="vlcPlayItem!, $key" {if $key == $vlcStatus['playing']['id']}id="playing"{/if} class="ajax{if $item == $vlcStatus['playing']['title']} playing{/if}" title="{$item}">{$item|truncate:30:""}</a> <a n:href="vlcDeleteItem!, $key" class="ajax red">X</a><br />
                                 {/if}
                             {/if}
                         {/foreach}
