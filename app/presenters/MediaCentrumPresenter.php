@@ -240,7 +240,7 @@ class MediaCentrumPresenter extends BasePresenter
         $curl = curl_init();
         curl_setopt_array($curl, array(
             CURLOPT_RETURNTRANSFER => 1,
-            CURLOPT_URL => 'http://192.168.1.15/requests/' . $command,
+            CURLOPT_URL => 'http://192.168.0.15/requests/' . $command,
             CURLOPT_USERPWD => $user . ':' . $password,
             CURLOPT_USERAGENT => 'cURL Request'
         ));
